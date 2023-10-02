@@ -16,8 +16,7 @@ class Game:
         else:
             return False
 
-    def make_move_if_legal(self: Game, move: str) -> bool:
-        move = chess.Move.from_uci(move)
+    def make_move_if_legal(self: Game, move: chess.Move) -> bool:
         if move in list(self.board.legal_moves):
             self.board.push(move)
             return True
@@ -36,16 +35,28 @@ def new_game() -> Game:
 
 def play_game() -> None:
     game = new_game()
-    black_player = Player()
+    black_player = Player(chess.BLACK)
     while not game.game_over():
         while True:
             if game.board.turn == chess.WHITE:
+                print(game.board.legal_moves)
                 print("Enter move for white:")
                 move = str(input())
+                try:
+                    print("attempting to parse white move")
+                    move = game.board.parse_san(move)
+                except:
+                    if move == "resign":
+                        break
+                    else:
+                        print(
+                            "Unable to parse move. Please use valid SAN notiation or type 'resign' to resign."
+                        )
+                        continue
             else:
                 move = black_player.get_move(game.board)
                 print(f"Black's move: {move}")
-            if move == "resign" or game.make_move_if_legal(move):
+            if game.make_move_if_legal(move):
                 break
         if move == "resign":
             print(
