@@ -76,7 +76,7 @@ def play_game() -> None:
             print(f"Black's move: {move}")
         if move == "resign":
             print(
-                f"{'white' if game.board.turn == chess.WHITE else 'black'} resigns. Game over."
+                f"{'White' if game.board.turn == chess.WHITE else 'Black'} resigns. Game over."
             )
             break
         else:
