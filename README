@@ -1,3 +1,7 @@
 # Simran's Python Chess Engine
 
 This is a passion project I am building while learning how chess engines work.
+
+## Running the engine
+
+Simply run `Python chess_engine.py` and enjoy your game!

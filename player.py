@@ -1,5 +1,4 @@
 import chess
-import random
 
 PIECES = [
     (chess.PAWN, 1),
