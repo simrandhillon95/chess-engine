@@ -1,11 +1,13 @@
 import chess
 import random
 
-PAWN_VALUE = 1
-KNIGHT_VALUE = 3
-BISHOP_VALUE = 3
-ROOK_VALUE = 5
-QUEEN_VALUE = 9
+PIECES = [
+    (chess.PAWN, 1),
+    (chess.KNIGHT, 3),
+    (chess.BISHOP, 3),
+    (chess.ROOK, 5),
+    (chess.QUEEN, 9),
+]
 
 
 class Player:
@@ -14,31 +16,45 @@ class Player:
     def __init__(self, colour: chess.Color) -> None:
         self.colour = colour
 
+    def move_is_legal(board: chess.Board, move: chess.Move) -> bool:
+        if move in list(board.legal_moves):
+            return True
+        else:
+            print("Illegal move. Please supply a legal move.")
+            return False
+
+
+class HumanPlayer(Player):
+    def get_move(self, board: chess.Board) -> chess.Move:
+        print(board.legal_moves)
+        print(f"Enter move for {'white' if self.colour == chess.WHITE else 'black'}:")
+        while True:
+            move = str(input())
+            try:
+                print(f"Attempting to parse move: {move}")
+                move = board.parse_san(move)
+                return move
+            except:
+                if move == "resign":
+                    break
+                else:
+                    print(
+                        "Unable to parse move. Please use valid SAN notation or type 'resign' to resign."
+                    )
+                    continue
+
+
+class EnginePlayer(Player):
     def evaluate_position(self, board: chess.Board) -> float:
         score = 0
-        # First evaluate the material balance. Our own pieces have a positive value
+        # First evaluate the material balance. The engine's pieces have a positive value
         # and the opponent's pieces have a negative value. Don't count the kings as they can
         # never leave the board.
-        score += (
-            len(board.pieces(chess.PAWN, self.colour)) * PAWN_VALUE
-            - len(board.pieces(chess.PAWN, not (self.colour))) * PAWN_VALUE
-        )
-        score += (
-            len(board.pieces(chess.KNIGHT, self.colour)) * KNIGHT_VALUE
-            - len(board.pieces(chess.KNIGHT, not (self.colour))) * KNIGHT_VALUE
-        )
-        score += (
-            len(board.pieces(chess.BISHOP, self.colour)) * BISHOP_VALUE
-            - len(board.pieces(chess.BISHOP, not (self.colour))) * BISHOP_VALUE
-        )
-        score += (
-            len(board.pieces(chess.ROOK, self.colour)) * ROOK_VALUE
-            - len(board.pieces(chess.ROOK, not (self.colour))) * ROOK_VALUE
-        )
-        score += (
-            len(board.pieces(chess.QUEEN, self.colour)) * QUEEN_VALUE
-            - len(board.pieces(chess.QUEEN, not (self.colour))) * QUEEN_VALUE
-        )
+        for piece, value in PIECES:
+            score += (
+                len(board.pieces(piece, self.colour)) * value
+                - len(board.pieces(piece, not (self.colour))) * value
+            )
         return score
 
     def get_move(self, board: chess.Board) -> chess.Move:
