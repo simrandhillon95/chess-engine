@@ -60,7 +60,9 @@ class EnginePlayer(Player):
             )
         return score
 
-    def search(self, board: chess.Board, depth: int) -> (chess.Move, int):
+    def search(
+        self, board: chess.Board, depth: int, alpha: float, beta: float
+    ) -> (chess.Move, int):
         # If we have not reached the maximum depth and there are still
         # legal moves to evaluate, carry on recursing.
         if depth < self.search_depth and board.legal_moves.count() != 0:
@@ -76,16 +78,28 @@ class EnginePlayer(Player):
             for current_candidate in board.legal_moves:
                 # Play the move so we can search the resulting position.
                 board.push(current_candidate)
-                _, value = self.search(board, depth + 1)
+                _, value = self.search(board, depth + 1, alpha, beta)
                 board.pop()
                 # If it is the engine's turn, find the move which
                 # maximises the evaluation.
-                if board.turn == self.colour and value > best_move[1]:
-                    best_move = (current_candidate, value)
+                if board.turn == self.colour:
+                    if value > best_move[1]:
+                        best_move = (current_candidate, value)
+                    # We are maximising, so replace alpha if we have
+                    # found a better move.
+                    alpha = max(alpha, best_move[1])
                 # If it is the opponents turn, find the move which
                 # minimises the evaluation.
-                elif board.turn != self.colour and value < best_move[1]:
-                    best_move = (current_candidate, value)
+                elif board.turn != self.colour:
+                    if value < best_move[1]:
+                        best_move = (current_candidate, value)
+                    # We are minimising, so replace beta if we
+                    # have found a better (for the minimising player) move.
+                    beta = min(beta, best_move[1])
+                # This means the branch is guaranteed to yield a better result for the minimiser (opponent)
+                # than the maximiser could guarantee elsewhere. There is no need to continue searching.
+                if beta <= alpha:
+                    break
             return best_move
         # We have reached the maximum depth or a leaf of the tree. Here we need to end recursion
         # and return the last move played and the evaluation of the resulting position.
@@ -95,5 +109,7 @@ class EnginePlayer(Player):
     def get_move(self, board: chess.Board) -> chess.Move:
         # Make a copy of the board for analysis
         # so we do not mutate the original.
-        next_move, _ = self.search(board, depth=0)
+        next_move, _ = self.search(
+            board, depth=0, alpha=float("-inf"), beta=float("+inf")
+        )
         return next_move
