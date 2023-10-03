@@ -44,6 +44,8 @@ class HumanPlayer(Player):
 
 
 class EnginePlayer(Player):
+    search_depth: int = 1
+
     def evaluate_position(self, board: chess.Board) -> float:
         score = 0
         # First evaluate the material balance. The engine's pieces have a positive value
